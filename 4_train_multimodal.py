@@ -26,14 +26,14 @@ from generate_text import load_dialogues
 
 # Configuration
 CONFIG = {
-    'batch_size': 64,
-    'learning_rate': 0.0005,
-    'n_epochs': 10,
+    'batch_size': 32,
+    'learning_rate': 0.0001,
+    'n_epochs': 20,
     'game_hidden_dims': [512, 256],
     'fusion_hidden_dims': [384, 192],
-    'dropout': 0.2,
+    'dropout': 0.25,
     'test_size': 0.2,
-    'random_seed': 42,
+    'random_seed': 0,
     'text_model': 'distilbert-base-uncased',
     'text_dim': 256,
     'checkpoint_dir': 'checkpoints',
