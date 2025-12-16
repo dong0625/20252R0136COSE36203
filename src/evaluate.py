@@ -246,25 +246,41 @@ def analyze_errors(predictions, labels, features=None, class_names=ACTION_NAMES,
     print("="*60)
     
     # Get misclassified indices
-    errors = predictions != labels
-    n_errors = np.sum(errors)
+    errors_mask = predictions != labels
+    n_errors = np.sum(errors_mask)
+    error_indices = np.where(errors_mask)[0]
     
     print(f"\nTotal misclassifications: {n_errors} / {len(labels)} ({n_errors/len(labels)*100:.2f}%)")
     
+    if n_errors == 0:
+        return
+
+    # Filter arrays for error analysis
+    pred_errors = predictions[errors_mask]
+    label_errors = labels[errors_mask]
+    
     # Confusion pairs
-    confusion_pairs = {}
-    for true_label, pred_label in zip(labels[errors], predictions[errors]):
-        pair = (true_label, pred_label)
-        confusion_pairs[pair] = confusion_pairs.get(pair, 0) + 1
+    pairs = np.column_stack((label_errors, pred_errors))
+    unique_pairs, counts = np.unique(pairs, axis=0, return_counts=True)
     
     # Sort by frequency
-    sorted_pairs = sorted(confusion_pairs.items(), key=lambda x: x[1], reverse=True)
+    sorted_idx = np.argsort(-counts)
     
     print("\nMost common confusion pairs:")
-    print(f"{'True Label':<15} {'Predicted':<15} {'Count':<10}")
-    print("-" * 40)
-    for (true_label, pred_label), count in sorted_pairs[:10]:
-        print(f"{class_names[true_label]:<15} {class_names[pred_label]:<15} {count:<10}")
+    print(f"{'True Label':<15} {'Predicted':<15} {'Count':<10} {'Sample Indices'}")
+    print("-" * 65)
+    
+    for i in range(min(n_examples, len(sorted_idx))):
+        idx = sorted_idx[i]
+        true_cls = unique_pairs[idx, 0]
+        pred_cls = unique_pairs[idx, 1]
+        count = counts[idx]
+        
+        # Get sample indices for this specific error (show up to 3)
+        current_pair_mask = (label_errors == true_cls) & (pred_errors == pred_cls)
+        example_indices = error_indices[current_pair_mask][:3]
+        
+        print(f"{class_names[true_cls]:<15} {class_names[pred_cls]:<15} {count:<10} {str(example_indices)}")
 
 
 def save_evaluation_report(
