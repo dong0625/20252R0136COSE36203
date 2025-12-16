@@ -228,3 +228,33 @@ def load_checkpoint(model, optimizer, path, device='cuda'):
     print(f"✓ Loaded checkpoint from {path}")
     print(f"  Epoch: {epoch}, Loss: {loss:.4f}")
     return epoch, loss
+
+def set_text_encoder_trainable(model, trainable=True):
+    """
+    Freeze or unfreeze the text encoder layers
+    
+    Args:
+        model: The MultimodalPokerModel instance
+        trainable: True to unfreeze (fine-tune), False to freeze
+    """
+    if not hasattr(model, 'game_encoder'): # Check if it's multimodal
+        print("Warning: Model does not appear to have a text encoder.")
+        return
+
+    # Check for text_encoder inside the model (assuming optimized structure)
+    # If using the original structure, we access the encoder params directly
+    text_modules = [m for n, m in model.named_modules() if 'bert' in n or 'encoder' in n.lower()]
+    
+    count = 0
+    for module in text_modules:
+        # Avoid freezing the game_encoder MLP by mistake
+        if module is model.game_encoder: 
+            continue
+            
+        for param in module.parameters():
+            param.requires_grad = trainable
+            count += 1
+            
+    status = "Unfrozen" if trainable else "Frozen"
+    print(f"✓ {status} text encoder parameters ({count} weights affected)")
+    print(f"  Mode: {'Fine-tuning' if trainable else 'Feature Extraction'}")
