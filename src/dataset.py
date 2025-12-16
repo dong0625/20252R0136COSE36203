@@ -9,6 +9,7 @@ import os
 from typing import List, Dict, Tuple
 import re
 import requests
+import random
 
 
 class PokerDataset(Dataset):
@@ -518,3 +519,19 @@ def load_processed_data(input_path='data/processed'):
     print(f"  Labels shape: {labels.shape}")
     
     return features, labels
+
+def augment_suits(card_list):
+    suits = ['c', 'd', 'h', 's']
+    shuffled_suits = suits.copy()
+    random.shuffle(shuffled_suits)
+    
+    mapping = {orig: new for orig, new in zip(suits, shuffled_suits)}
+    
+    new_cards = []
+    for card in card_list:
+        rank = card[0]
+        suit = card[1]
+        new_suit = mapping.get(suit, suit)
+        new_cards.append(f"{rank}{new_suit}")
+        
+    return new_cards
