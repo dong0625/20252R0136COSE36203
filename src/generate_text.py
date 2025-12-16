@@ -508,3 +508,29 @@ def load_dialogues(input_file='data/text/dialogues.jsonl'):
     
     print(f"✓ Loaded {len(dialogues)} dialogues from {input_file}")
     return dialogues, actions
+
+def clean_generated_text(text):
+    """
+    Common utility to clean LLM outputs
+    """
+    if not text: return ""
+    
+    meta_patterns = [
+        r"^(Sure|Here|Okay|Given|Based|The player|In this).{0,50}(:|likely say|might say|would say)\s*",
+        r"^(Output|Dialogue|Response):\s*",
+        r"\(.*\)"
+    ]
+    
+    cleaned = text.strip()
+    for pattern in meta_patterns:
+        cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE | re.DOTALL)
+    
+    cleaned = cleaned.strip('"\'')
+    
+    if '\n' in cleaned:
+        cleaned = cleaned.split('\n')[0]
+    
+    if len(cleaned) < 2 or len(cleaned.split()) > 20:
+        return ""
+        
+    return cleaned.strip()
