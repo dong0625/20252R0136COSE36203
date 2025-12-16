@@ -179,19 +179,9 @@ def parse_phh_hand(phh_text):
     
     return hand
 
-
 def parse_cards(card_str):
-    """Parse card string into list of cards (e.g., 'TcQc' -> ['Tc', 'Qc'])"""
-    cards = []
-    i = 0
-    while i < len(card_str):
-        if i + 1 < len(card_str):
-            cards.append(card_str[i:i+2])
-            i += 2
-        else:
-            i += 1
+    cards = [card_str[i:i+2] for i in range(0, len(card_str), 2)]
     return cards
-
 
 # ============================================================================
 # Feature Extraction
