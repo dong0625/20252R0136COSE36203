@@ -72,7 +72,7 @@ def evaluate_model(predictions, labels, class_names=ACTION_NAMES, verbose=True):
     return metrics
 
 
-def plot_confusion_matrix(predictions, labels, class_names=ACTION_NAMES, save_path=None):
+def plot_confusion_matrix(predictions, labels, class_names=ACTION_NAMES, save_path=None, normalize=False):
     """
     Plot confusion matrix
     
@@ -81,21 +81,33 @@ def plot_confusion_matrix(predictions, labels, class_names=ACTION_NAMES, save_pa
         labels: Array of true labels
         class_names: List of class names
         save_path: Optional path to save figure
+        normalize: Whether to normalize the confusion matrix
     """
     cm = confusion_matrix(labels, predictions, labels=list(range(len(class_names))))
+    
+    # Configure formatting based on normalization
+    fmt = 'd'
+    title = 'Confusion Matrix'
+    
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        fmt = '.2f'
+        title += ' (Normalized)'
     
     plt.figure(figsize=(10, 8))
     sns.heatmap(
         cm, 
         annot=True, 
-        fmt='d', 
+        fmt=fmt, 
         cmap='Blues',
         xticklabels=class_names,
-        yticklabels=class_names
+        yticklabels=class_names,
+        vmin=0 if normalize else None,
+        vmax=1 if normalize else None
     )
     plt.ylabel('True Label')
     plt.xlabel('Predicted Label')
-    plt.title('Confusion Matrix')
+    plt.title(title)
     plt.tight_layout()
     
     if save_path:
